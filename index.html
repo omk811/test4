@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الإعراب والبناء - سورة الفيل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .correct {
+            background-color: #dcfce7;
+            border-color: #16a34a;
+        }
+        .incorrect {
+            background-color: #fef2f2;
+            border-color: #dc2626;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-800 mb-2">🕌 لعبة الإعراب والبناء</h1>
+            <p class="text-xl text-gray-600">تطبيق على سورة الفيل الكريمة</p>
+            <div class="mt-4 p-4 bg-white rounded-lg shadow-md">
+                <p class="text-lg text-gray-700 leading-relaxed">
+                    ﴿ أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَابِ الْفِيلِ * أَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ * وَأَرْسَلَ عَلَيْهِمْ طَيْرًا أَبَابِيلَ * تَرْمِيهِم بِحِجَارَةٍ مِّن سِجِّيلٍ * فَجَعَلَهُمْ كَعَصْفٍ مَّأْكُولٍ ﴾
+                </p>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-indigo-700">التقدم</span>
+                <span class="text-sm font-medium text-indigo-700" id="progress-text">0 / 15</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="progress-bar bg-indigo-600 h-3 rounded-full" id="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Score Display -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4 space-x-reverse">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="correct-score">0</div>
+                    <div class="text-sm text-gray-600">إجابات صحيحة</div>
+                </div>
+                <div class="w-px h-8 bg-gray-300"></div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600" id="incorrect-score">0</div>
+                    <div class="text-sm text-gray-600">إجابات خاطئة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="question-card bg-white rounded-xl shadow-lg p-6 mb-6" id="question-card">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">السؤال <span id="question-number">1</span></h2>
+                <div class="text-sm text-gray-500" id="question-type"></div>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-lg text-gray-700 mb-4" id="question-text"></p>
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <p class="text-xl font-bold text-indigo-800" id="word-highlight"></p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">اختر الإجابة الصحيحة:</label>
+                <select id="answer-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg">
+                    <option value="">-- اختر الإجابة --</option>
+                </select>
+            </div>
+
+            <div class="flex justify-between">
+                <button id="submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    تأكيد الإجابة
+                </button>
+                <button id="next-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 hidden">
+                    السؤال التالي
+                </button>
+            </div>
+
+            <div id="feedback" class="mt-4 p-4 rounded-lg hidden">
+                <p id="feedback-text" class="font-medium"></p>
+                <p id="explanation" class="text-sm mt-2"></p>
+            </div>
+        </div>
+
+        <!-- Final Results -->
+        <div id="results-card" class="bg-white rounded-xl shadow-lg p-8 text-center hidden">
+            <div class="mb-6">
+                <div class="text-6xl mb-4" id="results-emoji">🎉</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">انتهت اللعبة!</h2>
+                <p class="text-xl text-gray-600" id="final-message"></p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600" id="final-correct">0</div>
+                        <div class="text-gray-600">إجابات صحيحة</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-600" id="final-incorrect">0</div>
+                        <div class="text-gray-600">إجابات خاطئة</div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="text-2xl font-bold text-indigo-600" id="final-percentage">0%</div>
+                    <div class="text-gray-600">النسبة المئوية</div>
+                </div>
+            </div>
+
+            <button id="restart-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition duration-200">
+                🔄 إعادة اللعبة
+            </button>
+        </div>
+
+        <!-- Links Section -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">🔗 روابط مفيدة</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Main Topic Link -->
+                <a href="https://omk811.blogspot.com/2025/09/blog-post_13.html" target="_blank" 
+                   class="flex items-center justify-center p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-200 shadow-md">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">📚</div>
+                        <div class="font-semibold text-sm">العودة إلى الموضوع الرئيسي</div>
+                    </div>
+                </a>
+                
+                <!-- WhatsApp Channel Link -->
+                <a href="https://whatsapp.com/channel/0029VamotBKCxoAy3fzUcv3T" target="_blank" 
+                   class="flex items-center justify-center p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition duration-200 shadow-md">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">💬</div>
+                        <div class="font-semibold text-sm">قناة الأستاذ خليل البلوشي</div>
+                        <div class="text-xs opacity-90">واتساب</div>
+                    </div>
+                </a>
+                
+                <!-- YouTube Channel Link -->
+                <a href="https://www.youtube.com/@teacherKhalil811" target="_blank" 
+                   class="flex items-center justify-center p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition duration-200 shadow-md">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">📺</div>
+                        <div class="font-semibold text-sm">قناة الأستاذ خليل البلوشي</div>
+                        <div class="text-xs opacity-90">يوتيوب</div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-6 pt-4 border-t border-gray-200 text-center">
+                <p class="text-sm text-gray-600">
+                    🌟 تم إعداد هذه اللعبة بواسطة الأستاذ خليل البلوشي
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                text: "في قوله تعالى: ﴿ أَلَمْ تَرَ ﴾، ما نوع كلمة 'أَلَمْ'؟",
+                word: "أَلَمْ",
+                options: ["اسم معرب", "فعل معرب", "حرف مبني", "ضمير مبني"],
+                correct: 2,
+                explanation: "'أَلَمْ' حرف استفهام مبني على السكون لا محل له من الإعراب"
+            },
+            {
+                text: "في قوله تعالى: ﴿ بِحِجَارَةٍ ﴾، ما نوع كلمة 'حِجَارَةٍ'؟",
+                word: "حِجَارَةٍ",
+                options: ["فعل مبني", "حرف مبني", "اسم معرب", "ضمير مبني"],
+                correct: 2,
+                explanation: "'حِجَارَةٍ' اسم معرب مجرور بالباء وعلامة جره الكسرة الظاهرة"
+            },
+            {
+                text: "في قوله تعالى: ﴿ كَيْفَ ﴾، ما نوع هذه الكلمة؟",
+                word: "كَيْفَ",
+                options: ["حرف مبني", "اسم مبني", "فعل مبني", "اسم معرب"],
+                correct: 1,
+                explanation: "'كَيْفَ' اسم استفهام مبني على الفتح في محل نصب حال"
+            },
+            {
+                text: "في قوله تعالى: ﴿ فَعَلَ ﴾، ما نوع هذا الفعل؟",
+                word: "فَعَلَ",
+                options: ["اسم معرب", "فعل مبني", "حرف مبني", "فعل معرب"],
+                correct: 1,
+                explanation: "'فَعَلَ' فعل ماضٍ مبني على الفتح لا محل له من الإعراب"
+            },
+            {
+                text: "في قوله تعالى: ﴿ رَبُّكَ ﴾، ما نوع كلمة 'رَبُّ'؟",
+                word: "رَبُّ",
+                options: ["فعل معرب", "حرف مبني", "اسم معرب", "اسم مبني"],
+                correct: 2,
+                explanation: "'رَبُّ' اسم معرب فاعل مرفوع وعلامة رفعه الضمة الظاهرة"
+            },
+            {
+                text: "في قوله تعالى: ﴿ رَبُّكَ ﴾، ما نوع الكاف في 'كَ'؟",
+                word: "كَ",
+                options: ["حرف مبني", "اسم معرب", "ضمير مبني", "فعل مبني"],
+                correct: 2,
+                explanation: "الكاف ضمير متصل مبني على الفتح في محل جر مضاف إليه"
+            },
+            {
+                text: "في قوله تعالى: ﴿ بِأَصْحَابِ ﴾، ما نوع حرف الباء؟",
+                word: "بِ",
+                options: ["ضمير مبني", "حرف مبني", "اسم معرب", "فعل مبني"],
+                correct: 1,
+                explanation: "الباء حرف جر مبني على الكسر لا محل له من الإعراب"
+            },
+            {
+                text: "في قوله تعالى: ﴿ أَصْحَابِ ﴾، ما نوع هذه الكلمة؟",
+                word: "أَصْحَابِ",
+                options: ["حرف مبني", "فعل معرب", "اسم مبني", "اسم معرب"],
+                correct: 3,
+                explanation: "'أَصْحَابِ' اسم معرب مجرور بالباء وعلامة جره الكسرة الظاهرة"
+            },
+            {
+                text: "في قوله تعالى: ﴿ الْفِيلِ ﴾، ما نوع هذه الكلمة؟",
+                word: "الْفِيلِ",
+                options: ["فعل معرب", "اسم معرب", "حرف مبني", "اسم مبني"],
+                correct: 1,
+                explanation: "'الْفِيلِ' اسم معرب مضاف إليه مجرور وعلامة جره الكسرة الظاهرة"
+            },
+            {
+                text: "في قوله تعالى: ﴿ يَجْعَلْ ﴾، ما نوع هذا الفعل؟",
+                word: "يَجْعَلْ",
+                options: ["حرف مبني", "اسم معرب", "فعل معرب", "فعل مبني"],
+                correct: 2,
+                explanation: "'يَجْعَلْ' فعل مضارع معرب مجزوم بـ 'لم' وعلامة جزمه السكون"
+            },
+            {
+                text: "في قوله تعالى: ﴿ كَيْدَهُمْ ﴾، ما نوع الهاء في 'هُمْ'؟",
+                word: "هُمْ",
+                options: ["فعل مبني", "ضمير مبني", "حرف مبني", "اسم معرب"],
+                correct: 1,
+                explanation: "'هُمْ' ضمير متصل مبني على السكون في محل جر مضاف إليه"
+            },
+            {
+                text: "في قوله تعالى: ﴿ وَأَرْسَلَ ﴾، ما نوع الواو؟",
+                word: "وَ",
+                options: ["ضمير مبني", "فعل مبني", "حرف مبني", "اسم معرب"],
+                correct: 2,
+                explanation: "الواو حرف عطف مبني على الفتح لا محل له من الإعراب"
+            },
+            {
+                text: "في قوله تعالى: ﴿ عَلَيْهِمْ ﴾، ما نوع كلمة 'عَلَى'؟",
+                word: "عَلَى",
+                options: ["اسم معرب", "ضمير مبني", "فعل مبني", "حرف مبني"],
+                correct: 3,
+                explanation: "'عَلَى' حرف جر مبني على السكون لا محل له من الإعراب"
+            },
+            {
+                text: "في قوله تعالى: ﴿ طَيْرًا ﴾، ما نوع هذه الكلمة؟",
+                word: "طَيْرًا",
+                options: ["حرف مبني", "فعل معرب", "اسم مبني", "اسم معرب"],
+                correct: 3,
+                explanation: "'طَيْرًا' اسم معرب مفعول به منصوب وعلامة نصبه الفتحة الظاهرة"
+            },
+            {
+                text: "في قوله تعالى: ﴿ تَرْمِيهِم ﴾، ما نوع الفعل 'تَرْمِي'؟",
+                word: "تَرْمِي",
+                options: ["اسم معرب", "حرف مبني", "فعل مبني", "فعل معرب"],
+                correct: 3,
+                explanation: "'تَرْمِي' فعل مضارع معرب مرفوع وعلامة رفعه الضمة المقدرة على الياء"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let answered = false;
+
+        const questionCard = document.getElementById('question-card');
+        const resultsCard = document.getElementById('results-card');
+        const questionNumber = document.getElementById('question-number');
+        const questionText = document.getElementById('question-text');
+        const wordHighlight = document.getElementById('word-highlight');
+        const answerSelect = document.getElementById('answer-select');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const feedback = document.getElementById('feedback');
+        const feedbackText = document.getElementById('feedback-text');
+        const explanation = document.getElementById('explanation');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const correctScore = document.getElementById('correct-score');
+        const incorrectScore = document.getElementById('incorrect-score');
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            answered = false;
+            
+            questionNumber.textContent = currentQuestion + 1;
+            questionText.textContent = question.text;
+            wordHighlight.textContent = question.word;
+            
+            // Clear and populate options
+            answerSelect.innerHTML = '<option value="">-- اختر الإجابة --</option>';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('option');
+                optionElement.value = index;
+                optionElement.textContent = option;
+                answerSelect.appendChild(optionElement);
+            });
+
+            // Reset UI
+            answerSelect.value = '';
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            feedback.classList.add('hidden');
+            questionCard.classList.remove('correct', 'incorrect');
+
+            // Update progress
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progress = (currentQuestion / questions.length) * 100;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `${currentQuestion} / ${questions.length}`;
+        }
+
+        function updateScores() {
+            correctScore.textContent = correctAnswers;
+            incorrectScore.textContent = incorrectAnswers;
+        }
+
+        function checkAnswer() {
+            if (answered || answerSelect.value === '') return;
+
+            answered = true;
+            const question = questions[currentQuestion];
+            const selectedAnswer = parseInt(answerSelect.value);
+            const isCorrect = selectedAnswer === question.correct;
+
+            if (isCorrect) {
+                correctAnswers++;
+                questionCard.classList.add('correct');
+                feedbackText.textContent = '✅ إجابة صحيحة! أحسنت';
+                feedbackText.className = 'font-medium text-green-700';
+            } else {
+                incorrectAnswers++;
+                questionCard.classList.add('incorrect');
+                feedbackText.textContent = '❌ إجابة خاطئة. الإجابة الصحيحة: ' + question.options[question.correct];
+                feedbackText.className = 'font-medium text-red-700';
+            }
+
+            explanation.textContent = question.explanation;
+            feedback.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+            
+            updateScores();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            questionCard.classList.add('hidden');
+            resultsCard.classList.remove('hidden');
+            
+            const percentage = Math.round((correctAnswers / questions.length) * 100);
+            
+            document.getElementById('final-correct').textContent = correctAnswers;
+            document.getElementById('final-incorrect').textContent = incorrectAnswers;
+            document.getElementById('final-percentage').textContent = percentage + '%';
+            
+            let message, emoji;
+            if (percentage >= 90) {
+                message = 'ممتاز جداً! أتقنت الإعراب والبناء';
+                emoji = '🏆';
+            } else if (percentage >= 80) {
+                message = 'جيد جداً! لديك فهم قوي للإعراب والبناء';
+                emoji = '🎉';
+            } else if (percentage >= 70) {
+                message = 'جيد! تحتاج لمزيد من التدريب';
+                emoji = '👍';
+            } else if (percentage >= 60) {
+                message = 'مقبول، يمكنك التحسن أكثر';
+                emoji = '📚';
+            } else {
+                message = 'تحتاج لمراجعة قواعد الإعراب والبناء';
+                emoji = '💪';
+            }
+            
+            document.getElementById('final-message').textContent = message;
+            document.getElementById('results-emoji').textContent = emoji;
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            answered = false;
+            
+            questionCard.classList.remove('hidden');
+            resultsCard.classList.add('hidden');
+            
+            updateScores();
+            loadQuestion();
+        }
+
+        // Event listeners
+        submitBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        document.getElementById('restart-btn').addEventListener('click', restartGame);
+
+        answerSelect.addEventListener('change', function() {
+            submitBtn.disabled = this.value === '';
+        });
+
+        // Initialize game
+        loadQuestion();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97ea05fa35c7f9cf',t:'MTc1Nzc5MTQ1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
